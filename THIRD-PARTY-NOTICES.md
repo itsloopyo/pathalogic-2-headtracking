@@ -20,7 +20,7 @@ either way.
 | HarmonyX | 2.9.0 | MIT | Inside the vendored BepInEx archive |
 | Mono.Cecil | 0.10.4 | MIT | Inside the vendored BepInEx archive |
 | MonoMod | 22.1.29.1 | MIT | Inside the vendored BepInEx archive |
-| cameraunlock-core | b4e4c756462834e64dd4fd57b25e8473d2aceafb | MIT | Compiled into `Pathologic2HeadTracking.dll` |
+| cameraunlock-core | 0cd0f28090e963ac4b30a31e4cf0a47327eca1da | MIT | Compiled into `Pathologic2HeadTracking.dll` |
 | OpenTrack | n/a | ISC | Not bundled; UDP protocol interoperability only |
 
 Versions for the four components inside the BepInEx archive were read from the
@@ -539,7 +539,7 @@ work published under its own LICENSE, so that notice has to travel with the
 binaries built from it. It ships as `licenses/cameraunlock-core-LICENSE.txt` in
 the installer ZIP, and the text is reproduced here as well.
 
-- **Version:** commit `b4e4c756462834e64dd4fd57b25e8473d2aceafb`
+- **Version:** commit `0cd0f28090e963ac4b30a31e4cf0a47327eca1da`
 - **License:** MIT
 - **Upstream:** https://github.com/itsloopyo/cameraunlock-core
 - **Usage:** Shared OpenTrack receiver, pose processing and Unity camera helpers.

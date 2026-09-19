@@ -1,0 +1,79 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Pathologic2HeadTracking</AssemblyName>
+    <RootNamespace>Pathologic2HeadTracking</RootNamespace>
+    <Version>0.0.0</Version>
+    <LangVersion>7.3</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <!-- TreatWarningsAsErrors covers the compiler only. An unresolved reference is
+         an MSBuild warning, so a stub missing from the builder's list would build
+         green and ship a DLL binding an assembly that will not load in game. -->
+    <MSBuildWarningsAsErrors>MSB3245;MSB3106</MSBuildWarningsAsErrors>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <OutputType>Library</OutputType>
+    <Authors>itsloopyo</Authors>
+    <Description>Head tracking mod for Pathologic 2 using CameraUnlock.Core</Description>
+  </PropertyGroup>
+
+  <!-- Every reference resolves from libs/, which 'pixi run setup-libs' fills from the
+       checked-in stub source and the vendored BepInEx archive. There is deliberately
+       no detection of an installed game: a developer who owns Pathologic 2 would
+       otherwise build against different assemblies than CI does, both green. A
+       validation build against real game DLLs is an explicit
+       -p:UnityEnginePath=<game>\Pathologic_Data\Managed, never the default.
+
+       UnityEnginePath is defaulted in Directory.Build.props so it is set before the
+       ProjectReference below passes it to CameraUnlock.Core.Unity. A command-line -p:
+       is a global property and overrides that default. -->
+  <Target Name="RequireReferenceAssemblies"
+          BeforeTargets="ResolveProjectReferences;ResolveAssemblyReferences"
+          Condition="!Exists('$(UnityEnginePath)') Or !Exists('$(UnityEnginePath)\BepInEx.dll')">
+    <Error Text="libs/ is empty. Run 'pixi run setup-libs' to build the reference stubs and extract the vendored BepInEx. This build never reaches for an installed game." />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\cameraunlock-core\csharp\src\CameraUnlock.Core\CameraUnlock.Core.csproj" />
+    <ProjectReference Include="..\..\cameraunlock-core\csharp\src\CameraUnlock.Core.Unity\CameraUnlock.Core.Unity.csproj">
+      <AdditionalProperties>UnityEnginePath=$(UnityEnginePath)</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(UnityEnginePath)\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityEnginePath)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(UnityEnginePath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(UnityEnginePath)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(UnityEnginePath)\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(UnityEnginePath)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(UnityEnginePath)\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="libs\**" />
+    <None Remove="libs\**" />
+  </ItemGroup>
+</Project>

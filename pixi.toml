@@ -1,0 +1,46 @@
+[workspace]
+name = "pathologic-2-head-tracking"
+version = "0.0.0"
+description = "Head tracking mod for Pathologic 2 using the CameraUnlock shared library"
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tasks]
+update-submodule = "git submodule update --remote cameraunlock-core && powershell -NoProfile -ExecutionPolicy Bypass -File cameraunlock-core/scripts/update-submodule.ps1"
+sync = "git submodule update --remote cameraunlock-core"
+# Manual bump of the vendored BepInEx copy under vendor/bepinex. Nothing in the
+# build or release chain depends on this - CI installs whatever is committed.
+update-deps = "powershell -ExecutionPolicy Bypass -File scripts/update-deps.ps1"
+# Fills src/Pathologic2HeadTracking/libs/ from repo files only: BepInEx.dll out of
+# the vendored archive, and the Unity reference stubs compiled from the shared
+# sources in the core submodule. The script owns the whole job including the stub
+# builder's argument list - it used to be spelled out a second time here, so every
+# build compiled the stubs twice from two copies that had to be kept in step by
+# hand, and the pixi copy silently won because it ran last.
+#
+# Pathologic 2 is Unity 2018.4.6f1 on the .NET 4.x Mono profile (boot.config says
+# scripting-runtime-version=latest), hence net472. The engine is past the assembly
+# split, so the module stubs carry real types rather than being emitted empty.
+setup-libs = "powershell -ExecutionPolicy Bypass -File scripts/setup-libs.ps1"
+setup = { depends-on = ["setup-libs"] }
+restore = { cmd = "dotnet restore src/Pathologic2HeadTracking/Pathologic2HeadTracking.csproj", depends-on = ["setup-libs"] }
+build = { cmd = "dotnet build src/Pathologic2HeadTracking/Pathologic2HeadTracking.csproj -c Release -m:1", depends-on = ["restore"] }
+# Checks that every member reference the build emits resolves against the
+# assemblies it binds to at runtime. Stub/engine shape drift (a property
+# declared as a field, or the reverse) compiles cleanly and only fails in
+# game. Needs the game installed; skips and succeeds without it.
+verify-refs = { cmd = "powershell -ExecutionPolicy Bypass -File cameraunlock-core/scripts/verify-assembly-refs.ps1 -GameId pathologic-2 -BuildDir src/Pathologic2HeadTracking/bin/Release", depends-on = ["build"] }
+test = { cmd = "dotnet test src/Pathologic2HeadTracking.Tests/Pathologic2HeadTracking.Tests.csproj -c Release -m:1", depends-on = ["build"] }
+install = { cmd = "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1 Release", depends-on = ["build"] }
+# /y because a pixi task allocates no TTY: the shared uninstall body ends on a
+# `pause` without it, and a task that reads stdin aborts.
+uninstall = 'scripts\uninstall.cmd /y'
+package = { cmd = "powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1", depends-on = ["build"] }
+release = "powershell -ExecutionPolicy Bypass -File scripts/release.ps1"
+release-nightly = "powershell -ExecutionPolicy Bypass -File scripts/release-nightly.ps1"
+# The two release gates. Both read only, both run in CI: validate-manifest checks
+# the launcher contract against the built ZIP, validate-notices checks that every
+# licence this package redistributes has its text in THIRD-PARTY-NOTICES.md.
+validate-manifest = "node cameraunlock-core/scripts/validate-manifest.mjs"
+validate-notices = "node cameraunlock-core/scripts/validate-notices.mjs"
+clean = "dotnet clean src/Pathologic2HeadTracking/Pathologic2HeadTracking.csproj"

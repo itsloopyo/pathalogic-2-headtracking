@@ -1,0 +1,12 @@
+<Project>
+  <!-- The generated reference stubs are the default, unconditionally: a build that
+       cannot find them has to fail rather than quietly resolve somewhere else. The
+       head .csproj errors with the command to run when libs/ is empty.
+
+       A validation build against a real install overrides this from the command line
+       with -p:UnityEnginePath=<game>\Pathologic_Data\Managed. Command-line properties
+       are global and win over this default. -->
+  <PropertyGroup Condition="'$(UnityEnginePath)' == ''">
+    <UnityEnginePath>$(MSBuildThisFileDirectory)src\Pathologic2HeadTracking\libs</UnityEnginePath>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,80 @@
+name: Build
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+
+# This job checks out, builds and packages. It never writes to the repository,
+# so the token it is handed should not be able to. Declared explicitly because
+# the repository default is the whole grant, and this workflow runs on a push to
+# every branch.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and Validate
+    runs-on: windows-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'Release v') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          dotnet-version: '8.0.x'
+
+      # run-install: false - this workspace declares no conda dependencies
+      # (pixi is a task runner; dotnet and PowerShell are system tools). The
+      # action's post-install `pixi list` exits 1 on an empty environment, so
+      # we let `pixi run package` provision on demand instead.
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11 # v0.9.6
+        with:
+          run-install: false
+
+      # Build, test and package through the SAME commands a developer runs
+      # locally. The vendored BepInEx and the Unity reference stubs are produced
+      # inside the pixi task chain (setup-libs -> restore -> build), so no build
+      # logic lives in this workflow and local and CI can't drift.
+      - name: Test
+        shell: pwsh
+        run: pixi run test
+
+      - name: Build and package
+        shell: pwsh
+        run: pixi run package
+
+      # The two release gates, run on every push rather than only at tag time:
+      # a notices or manifest failure found at release is found with a version
+      # already stamped into five files.
+      - name: Validate launcher manifest
+        shell: pwsh
+        run: pixi run validate-manifest
+
+      - name: Validate third-party notices
+        shell: pwsh
+        run: pixi run validate-notices
+
+      - name: Verify installer was produced
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem release/*-installer.zip -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $zip) {
+            Write-Host "::error::No installer ZIP was produced by 'pixi run package'"
+            exit 1
+          }

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- net48, because xunit does not run on the mod's net472 reference set. -->
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>Pathologic2HeadTracking.Tests</AssemblyName>
+    <RootNamespace>Pathologic2HeadTracking.Tests</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\cameraunlock-core\csharp\src\CameraUnlock.Core\CameraUnlock.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The units under test are compiled in from the mod's own sources rather than
+       referenced through its project. A ProjectReference to the mod drags
+       CameraUnlock.Core.Unity in behind it, which wants the Unity stub set this test
+       host has no business loading. Compiling the sources keeps the tests on the
+       same files the mod ships and keeps a Unity assembly out of the test host
+       entirely. Every file here is Unity-free by construction; adding a UnityEngine
+       type to one breaks this build, which is the reminder that the geometry and the
+       gate have to stay testable. -->
+  <ItemGroup>
+    <Compile Include="..\Pathologic2HeadTracking\CameraRig\LeanAllowance.cs">
+      <Link>CameraRig\LeanAllowance.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\CameraRig\PositionScaling.cs">
+      <Link>CameraRig\PositionScaling.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\CameraRig\ZoomCompensation.cs">
+      <Link>CameraRig\ZoomCompensation.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\CameraRig\ZoomCompensatedSource.cs">
+      <Link>CameraRig\ZoomCompensatedSource.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\CameraRig\TrackerInputBounds.cs">
+      <Link>CameraRig\TrackerInputBounds.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\Core\TrackerSilenceTimer.cs">
+      <Link>Core\TrackerSilenceTimer.cs</Link>
+    </Compile>
+    <Compile Include="..\Pathologic2HeadTracking\Game\GameState.cs">
+      <Link>Game\GameState.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

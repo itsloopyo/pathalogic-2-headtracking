@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "mod_info": {
+    "name": "Pathologic2HeadTracking",
+    "version": "0.0.0",
+    "game_id": "pathologic-2"
+  },
+  "strategy": "BepInEx5",
+  "delivery_mode": "manifest",
+  "loader": {
+    "archives": [
+      {
+        "source": "vendor/bepinex/BepInEx_win_x64.zip",
+        "dest": "",
+        "flatten": null
+      }
+    ],
+    "detect": [
+      "BepInEx/core/BepInEx.dll",
+      "BepInEx/core/BepInEx.Preloader.dll"
+    ],
+    "seed": [
+      {
+        "target": "BepInEx/config/BepInEx.cfg",
+        "content_b64": "W0xvZ2dpbmcuQ29uc29sZV0NCkVuYWJsZWQgPSB0cnVlDQoNCltMb2dnaW5nLkRpc2tdDQpFbmFibGVkID0gdHJ1ZQ0K"
+      }
+    ]
+  },
+  "files": [
+    {
+      "source": "plugins/Pathologic2HeadTracking.dll",
+      "target": "BepInEx/plugins/Pathologic2HeadTracking.dll"
+    },
+    {
+      "source": "plugins/CameraUnlock.Core.dll",
+      "target": "BepInEx/plugins/CameraUnlock.Core.dll"
+    },
+    {
+      "source": "plugins/CameraUnlock.Core.Unity.dll",
+      "target": "BepInEx/plugins/CameraUnlock.Core.Unity.dll"
+    }
+  ],
+  "runtime_requirements": [],
+  "dependencies": []
+}

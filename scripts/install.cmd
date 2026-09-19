@@ -1,0 +1,59 @@
+@echo off
+:: ============================================
+:: Pathologic 2 Head Tracking - Install
+:: ============================================
+:: Thin wrapper - install body lives in cameraunlock-core/scripts/install-body-bepinex.cmd,
+:: staged into the release ZIP's shared/ by Copy-SharedBundle. To change
+:: install behaviour edit the body, not this wrapper.
+::
+:: Source of truth for everything below the CONFIG BLOCK:
+:: cameraunlock-core/scripts/templates/install-wrapper-bepinex.cmd. Copy this
+:: file to <mod>/scripts/install.cmd, fill in the CONFIG BLOCK, change nothing
+:: else. scripts/conformance.ps1 checks that nothing else changed.
+::
+:: Two BepInEx variants, dispatched by BEPINEX_SUBFOLDER: leave it empty for
+:: a regular BepInEx_win_<arch>.zip extracted to the game root, or set it to
+:: the wrapper directory name for a Thunderstore BepInExPack_<Game>, whose
+:: contents are flattened out of that directory into the game root.
+:: ============================================
+
+:: --- CONFIG BLOCK ---
+set "GAME_ID=pathologic-2"
+set "MOD_DISPLAY_NAME=Pathologic 2 Head Tracking"
+set "MOD_DLLS=Pathologic2HeadTracking.dll CameraUnlock.Core.dll CameraUnlock.Core.Unity.dll"
+set "MOD_INTERNAL_NAME=Pathologic2HeadTracking"
+set "MOD_VERSION=0.0.0"
+set "STATE_FILE=.headtracking-state.json"
+set "FRAMEWORK_TYPE=BepInEx"
+:: x64 or x86 - selects the vendored BepInEx zip.
+set "BEPINEX_ARCH=x64"
+:: Override the vendor zip filename (Thunderstore packs ship their own name).
+set "BEPINEX_VENDOR_ZIP_NAME="
+:: Thunderstore wrapper directory to flatten into the game root. Empty for
+:: regular BepInEx.
+set "BEPINEX_SUBFOLDER="
+:: Subfolder under BepInEx\plugins\ to deploy into. Empty lays the DLLs flat.
+set "PLUGIN_SUBFOLDER="
+:: Post-install help text. `&echo ` starts each further line.
+set "MOD_CONTROLS=Controls:&echo   End       - Toggle head tracking on/off&echo   Page Up   - Cycle tracking mode (full / rotation only / position only)&echo   Page Down - Toggle yaw mode (world-locked / camera-local)&echo   Insert    - Toggle the aim dot on/off&echo.&echo   No nav cluster? Ctrl+Shift+ Y=toggle G=mode H=yaw U=aim dot"
+:: --- END CONFIG BLOCK ---
+
+:: Pin delayed expansion off before `%*` is expanded on the `call` below.
+:: Under `cmd /V:ON`, or with DelayedExpansion=1 in
+:: HKCU\Software\Microsoft\Command Processor, cmd.exe eats a `!` out of the
+:: expanded line, and a real game path like C:\Games\Oh! My Game reaches the
+:: body already mangled. The body pins expansion off at its own outer scope
+:: too, but that is one `call` too late to save the argument it was handed.
+setlocal disabledelayedexpansion
+
+set "WRAPPER_DIR=%~dp0"
+set "_BODY=%WRAPPER_DIR%shared\install-body-bepinex.cmd"
+if not exist "%_BODY%" set "_BODY=%WRAPPER_DIR%..\cameraunlock-core\scripts\install-body-bepinex.cmd"
+if not exist "%_BODY%" (
+    echo ERROR: install-body-bepinex.cmd not found in shared\ or ..\cameraunlock-core\scripts\.
+    echo If this is a release ZIP, re-download it from GitHub ^(corrupt installer^).
+    echo If this is the dev tree, run: git submodule update --init --recursive
+    exit /b 1
+)
+call "%_BODY%" %*
+exit /b %errorlevel%

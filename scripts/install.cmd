@@ -36,6 +36,12 @@ set "BEPINEX_SUBFOLDER="
 set "PLUGIN_SUBFOLDER="
 :: Post-install help text. `&echo ` starts each further line.
 set "MOD_CONTROLS=Controls:&echo   End       - Toggle head tracking on/off&echo   Page Up   - Cycle tracking mode (full / rotation only / position only)&echo   Page Down - Toggle yaw mode (world-locked / camera-local)&echo   Insert    - Toggle the aim dot on/off&echo.&echo   No nav cluster? Ctrl+Shift+ Y=toggle G=mode H=yaw U=aim dot"
+:: Not used by this mod. Set blank so a value another mod's wrapper left in
+:: the same console does not reach the body.
+set "IL2CPP_VENDOR_DIR_NAME="
+set "IL2CPP_VENDOR_ZIP_NAME="
+set "IL2CPP_PLUGIN_DIR_NAME="
+set "IL2CPP_MOD_DLLS="
 :: --- END CONFIG BLOCK ---
 
 :: Pin delayed expansion off before `%*` is expanded on the `call` below.
